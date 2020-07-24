@@ -32,6 +32,7 @@ event_facial_response <- function(event) {
 #' @param face face to update
 #' @return updated \code{face}
 #' @importFrom dplyr case_when mutate %>%
+#' @importFrom rlang .data
 update_face <- function(face) {
   .update <- function(value, target, delta) {
     dplyr::case_when(
@@ -44,15 +45,16 @@ update_face <- function(face) {
   }
   face %>%
     mutate(
-      value = .update(value, target, delta)
+      value = .update(.data$value, .data$target, .data$delta)
     )
 }
 
 #' Simulate a single round of data for a single participant
 #' @param behavioural_data tbl of behavioural data (player, round, and temporal event markers)
 #' @return tbl of a simulated round with a column for each feature and a row for each frame
-#' @importFrom dplyr tibble %>% select filter case_when mutate pull bind_rows
+#' @importFrom dplyr tibble %>% select filter case_when mutate pull bind_rows contains
 #' @importFrom tidyr pivot_longer pivot_wider
+#' @importFrom rlang .data
 simulate_feature_data <- function(behavioural_data, ms_between_expressions = 150) {
   face <- tibble(
     feature = FEATURES,
@@ -65,7 +67,7 @@ simulate_feature_data <- function(behavioural_data, ms_between_expressions = 150
   last_outcome <- NULL
 
   events <- behavioural_data %>%
-    select(-partner_decision_time, -round_end_time) %>%
+    select(-.data$partner_decision_time, -.data$round_end_time) %>%
     pivot_longer(cols = contains('time'), values_to = 'time')
 
   out <- NULL
@@ -75,17 +77,18 @@ simulate_feature_data <- function(behavioural_data, ms_between_expressions = 150
 
     last_frame_end <- if (i > 1) frame_times[i - 1] else -1
     # Check if a new event occurred we can respond to
-    event <- events %>% filter(time > last_frame_end, time <= frame_times[i])
+    event <- events %>% filter(.data$time > last_frame_end,
+                               .data$time <= frame_times[i])
     if (nrow(event)) {
       last_event <- case_when(
-        'reveal_time' %in% pull(event, name) ~ 'reveal_time',
-        'decision_time' %in% pull(event, name) ~ 'decision_time',
+        'reveal_time' %in% pull(event, .data$name) ~ 'reveal_time',
+        'decision_time' %in% pull(event, .data$name) ~ 'decision_time',
         T ~ pull(event, name)[1]
       )
-      event <- filter(event, name == last_event)[1, ]
-      last_decision <- pull(event, player_a_cooperates)
-      last_partner_decision <- pull(event, player_b_cooperates)
-      last_outcome <- pull(event, outcome)
+      event <- filter(event, .data$name == last_event)[1, ]
+      last_decision <- pull(event, .data$player_a_cooperates)
+      last_partner_decision <- pull(event, .data$player_b_cooperates)
+      last_outcome <- pull(event, .data$outcome)
       face <- face %>%
         mutate(
           # we can map quickly between target and event_facial_response because
@@ -111,7 +114,7 @@ simulate_feature_data <- function(behavioural_data, ms_between_expressions = 150
 
   out %>%
     select(-target, -delta) %>%
-    pivot_wider(names_from = feature, values_from = value)
+    pivot_wider(names_from = .data$feature, values_from = .data$value)
 }
 
 #' Simulate facial data for players
@@ -121,9 +124,10 @@ simulate_feature_data <- function(behavioural_data, ms_between_expressions = 150
 #' @importFrom dplyr %>% mutate
 #' @importFrom tidyr nest unnest
 #' @importFrom purrr map
+#' @importFrom rlang .data
 simulate_faces <- function(behavioural_data, ms_between_expression = 150) {
   behavioural_data %>%
-    nest(d = -id) %>%
-    mutate(x = map(d, ~ simulate_feature_data(., ms_between_expressions = ms_between_expression))) %>%
-    unnest(cols = c(x))
+    nest(d = -.data$id) %>%
+    mutate(x = map(.data$d, ~ simulate_feature_data(., ms_between_expressions = ms_between_expression))) %>%
+    unnest(cols = c(.data$x))
 }

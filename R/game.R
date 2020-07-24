@@ -41,6 +41,7 @@ get_decision_time <- function(z_times, M, SD, cap = TRUE) {
 #'   defected, players cooperate based on their forgivingness.
 #' @return logical of T = cooperate, F = defect
 #' @importFrom dplyr if_else
+#' @importFrom stats runif
 does_player_cooperate <- function(player, previous_round) {
   partner_cooperated_before <- if_else(
     player$id == previous_round$player_a_id,
@@ -61,6 +62,8 @@ does_player_cooperate <- function(player, previous_round) {
 #' @param decision_time_sd standard deviation of the above
 #' @return tbl with $id, $round_id, and markers for $decision_time, $partner_decision_time, $reveal_time, and $round_end_time all in ms.
 #' @importFrom dplyr tibble %>% mutate select
+#' @importFrom rlang .data
+#' @importFrom stats rnorm
 simulate_behavioural_markers <- function(player, partner, n_rounds, decision_time_mean = 750, decision_time_sd = 100) {
   behaviour <- tibble(
     id = rep(player$id, n_rounds),
@@ -68,8 +71,8 @@ simulate_behavioural_markers <- function(player, partner, n_rounds, decision_tim
     z_decision_time = rnorm(n_rounds, player$z_decision_speed),
     z_partner_decision_time = rnorm(n_rounds, partner$z_decision_speed),
     .round_end_time = 5000,
-    .decision_time = get_decision_time(z_decision_time, decision_time_mean, decision_time_sd),
-    .partner_decision_time = get_decision_time(z_partner_decision_time, decision_time_mean, decision_time_sd),
+    .decision_time = get_decision_time(.data$z_decision_time, decision_time_mean, decision_time_sd),
+    .partner_decision_time = get_decision_time(.data$z_partner_decision_time, decision_time_mean, decision_time_sd),
     round_end_time = NA_real_,
     round_start_time = NA_real_,
     decision_time = NA_real_,
@@ -87,9 +90,16 @@ simulate_behavioural_markers <- function(player, partner, n_rounds, decision_tim
 
   behaviour %>%
     mutate(
-      reveal_time = pmax(decision_time, partner_decision_time)
+      reveal_time = pmax(.data$decision_time, .data$partner_decision_time)
     ) %>%
-    select(id, round_id, round_start_time, decision_time, partner_decision_time, reveal_time, round_end_time)
+    select(.data$id,
+           .data$round_id,
+           .data$round_start_time,
+           .data$decision_time,
+           .data$partner_decision_time,
+           .data$reveal_time,
+           .data$round_end_time)
+
 }
 
 #' Simulate the cooperation/defecting behaviour in the game

@@ -4,6 +4,8 @@
 #' @param n_players number of players to simulate
 #' @return tbl of $id, $z_decision_speed, $forgivingness, $sneakiness
 #' @importFrom dplyr %>% tibble mutate_at if_else vars
+#' @importFrom rlang .data
+#' @importFrom stats rgamma
 #' @export
 simulate_players <- function(n_players) {
   forgive_gamma_shape <- 1
@@ -25,7 +27,7 @@ simulate_players <- function(n_players) {
     ) + sneak_min
   ) %>%
     mutate_at(
-      vars(forgivingness, sneakiness),
+      vars(.data$forgivingness, .data$sneakiness),
       ~ if_else(. > 1, 1, .)
     )
 }
