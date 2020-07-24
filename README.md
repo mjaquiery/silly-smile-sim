@@ -1,3 +1,6 @@
+![test-coverage](https://github.com/mjaquiery/silly-smile-sim/workflows/test-coverage/badge.svg)
+![R-CMD-check](https://github.com/mjaquiery/silly-smile-sim/workflows/R-CMD-check/badge.svg)
+
 # Silly Smile Sim
 ## Matt Jaquiery and Olly Robertson
 ### Created 10/07/2020
