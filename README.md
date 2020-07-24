@@ -1,5 +1,7 @@
-![test-coverage](https://github.com/mjaquiery/silly-smile-sim/workflows/test-coverage/badge.svg)
 ![R-CMD-check](https://github.com/mjaquiery/silly-smile-sim/workflows/R-CMD-check/badge.svg)
+[![codecov](https://codecov.io/gh/mjaquiery/silly-smile-sim/branch/master/graph/badge.svg)](https://codecov.io/gh/mjaquiery/silly-smile-sim)
+
+
 
 # Silly Smile Sim
 ## Matt Jaquiery and Olly Robertson
