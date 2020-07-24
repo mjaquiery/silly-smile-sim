@@ -8,6 +8,8 @@ frames_to_ms(frameNumbers, fps = 30)
 }
 \arguments{
 \item{frameNumbers}{frames to get the beginnings of}
+
+\item{fps}{frame rate}
 }
 \value{
 millisecond at which each frame in frames begins

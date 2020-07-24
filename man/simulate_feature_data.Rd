@@ -8,6 +8,8 @@ simulate_feature_data(behavioural_data, ms_between_expressions = 150)
 }
 \arguments{
 \item{behavioural_data}{tbl of behavioural data (player, round, and temporal event markers)}
+
+\item{ms_between_expressions}{milliseconds between expressions}
 }
 \value{
 tbl of a simulated round with a column for each feature and a row for each frame

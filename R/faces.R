@@ -51,6 +51,7 @@ update_face <- function(face) {
 
 #' Simulate a single round of data for a single participant
 #' @param behavioural_data tbl of behavioural data (player, round, and temporal event markers)
+#' @param ms_between_expressions milliseconds between expressions
 #' @return tbl of a simulated round with a column for each feature and a row for each frame
 #' @importFrom dplyr tibble %>% select filter case_when mutate pull bind_rows contains
 #' @importFrom tidyr pivot_longer pivot_wider
@@ -59,7 +60,7 @@ simulate_feature_data <- function(behavioural_data, ms_between_expressions = 150
   face <- tibble(
     feature = FEATURES,
     value = 0,
-    target = value,
+    target = .data$value,
     delta = 0
   )
   last_event <- NULL
@@ -113,21 +114,22 @@ simulate_feature_data <- function(behavioural_data, ms_between_expressions = 150
   }
 
   out %>%
-    select(-target, -delta) %>%
+    select(-.data$target, -.data$delta) %>%
     pivot_wider(names_from = .data$feature, values_from = .data$value)
 }
 
 #' Simulate facial data for players
 #' @param behavioural_data tbl of behavioural data (player, round, and temporal event markers)
+#' @param ms_between_expressions milliseconds between expressions
 #' @return tbl of a simulated round with a column for each feature and a row for each frame
 #' @export
 #' @importFrom dplyr %>% mutate
 #' @importFrom tidyr nest unnest
 #' @importFrom purrr map
 #' @importFrom rlang .data
-simulate_faces <- function(behavioural_data, ms_between_expression = 150) {
+simulate_faces <- function(behavioural_data, ms_between_expressions = 150) {
   behavioural_data %>%
     nest(d = -.data$id) %>%
-    mutate(x = map(.data$d, ~ simulate_feature_data(., ms_between_expressions = ms_between_expression))) %>%
+    mutate(x = map(.data$d, ~ simulate_feature_data(., ms_between_expressions = ms_between_expressions))) %>%
     unnest(cols = c(.data$x))
 }

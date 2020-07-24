@@ -5,8 +5,8 @@
 OUTCOME_NAMES <- c('Mutual betrayal', 'Outcome stolen', 'Stole outcome', 'Outcome shared')
 
 #' Return a string describing the outcome
-#' @param player_a_decision whether player a cooperates
-#' @param player_b_decision whether player b cooperates
+#' @param a_cooperates whether player a cooperates
+#' @param b_cooperates whether player b cooperates
 #' @return string describing the outcome
 #' @export
 get_outcome_description <- function(a_cooperates, b_cooperates) {

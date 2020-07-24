@@ -7,9 +7,9 @@
 get_outcome_description(a_cooperates, b_cooperates)
 }
 \arguments{
-\item{player_a_decision}{whether player a cooperates}
+\item{a_cooperates}{whether player a cooperates}
 
-\item{player_b_decision}{whether player b cooperates}
+\item{b_cooperates}{whether player b cooperates}
 }
 \value{
 string describing the outcome

@@ -16,6 +16,7 @@ ms_to_frames <- function(ms, fps = 30, floor = T) {
 
 #' Find the millisecond at which frames begin
 #' @param frameNumbers frames to get the beginnings of
+#' @param fps frame rate
 #' @return millisecond at which each frame in frames begins
 #' @export
 frames_to_ms <- function(frameNumbers, fps = 30) {

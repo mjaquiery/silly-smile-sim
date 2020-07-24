@@ -18,15 +18,15 @@ feature_plot <- function(feature_data) {
            .data$last_decision,
            .data$last_partner_decision,
            .data$last_outcome) %>%
-    filter(last_event != lag(last_event)) %>%
+    filter(.data$last_event != lag(.data$last_event)) %>%
     bind_rows(tibble(last_event = 'round_start_time', frame = 0)) %>%
-    arrange(frame) %>%
+    arrange(.data$frame) %>%
     mutate(
       event = case_when(
         .data$last_event == 'round_start_time' ~
           'Round start',
         .data$last_event == 'decision_time' ~
-          if_else(last_decision, 'Choose split', 'Choose steal'),
+          if_else(.data$last_decision, 'Choose split', 'Choose steal'),
         .data$last_event == 'reveal_time' ~
           get_outcome_description(.data$last_decision, .data$last_partner_decision)
       )
@@ -35,7 +35,7 @@ feature_plot <- function(feature_data) {
   feature_data %>%
     pivot_longer(all_of(FEATURES), names_to = 'feature') %>%
     ggplot(aes(x = .data$frame, y = .data$value)) +
-    geom_vline(aes(xintercept = frame, colour = event, linetype = event), data = events, size = .75) +
+    geom_vline(aes(xintercept = .data$frame, colour = .data$event, linetype = .data$event), data = events, size = .75) +
     geom_line(aes(group = .data$id)) +
     scale_colour_manual(name = 'Event',
                         limits = c(
