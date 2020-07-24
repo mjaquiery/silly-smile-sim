@@ -4,13 +4,15 @@
 \alias{event_facial_response}
 \title{Return a target facial expression for an event}
 \usage{
-event_facial_response(event)
+event_facial_response(event, resting_face)
 }
 \arguments{
 \item{event}{tbl row of the event to which we are responding}
+
+\item{resting_face}{returned when nothing special is happening}
 }
 \value{
-tbl of feature-value pairs describing a facial expression
+tbl of feature-value pairs describing the log-odds that data match a feature expression
 }
 \description{
 Return a target facial expression for an event

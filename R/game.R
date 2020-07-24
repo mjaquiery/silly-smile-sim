@@ -67,6 +67,7 @@ does_player_cooperate <- function(player, previous_round) {
 simulate_behavioural_markers <- function(player, partner, n_rounds, decision_time_mean = 750, decision_time_sd = 100) {
   behaviour <- tibble(
     id = rep(player$id, n_rounds),
+    resting_face_seed = player$resting_face_seed,  # needed for face data stuff later
     round_id = 1:n_rounds,
     z_decision_time = rnorm(n_rounds, player$z_decision_speed),
     z_partner_decision_time = rnorm(n_rounds, partner$z_decision_speed),
@@ -93,6 +94,7 @@ simulate_behavioural_markers <- function(player, partner, n_rounds, decision_tim
       reveal_time = pmax(.data$decision_time, .data$partner_decision_time)
     ) %>%
     select(.data$id,
+           .data$resting_face_seed,
            .data$round_id,
            .data$round_start_time,
            .data$decision_time,

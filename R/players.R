@@ -5,7 +5,7 @@
 #' @return tbl of $id, $z_decision_speed, $forgivingness, $sneakiness
 #' @importFrom dplyr %>% tibble mutate_at if_else vars
 #' @importFrom rlang .data
-#' @importFrom stats rgamma
+#' @importFrom stats rgamma runif
 #' @export
 simulate_players <- function(n_players) {
   forgive_gamma_shape <- 1
@@ -24,7 +24,8 @@ simulate_players <- function(n_players) {
     # Sneakiness is the likelihood of defecting after successful cooperation
     sneakiness = rgamma(
       n_players, shape = sneak_gamma_shape, rate = sneak_gamma_rate
-    ) + sneak_min
+    ) + sneak_min,
+    resting_face_seed = round(runif(n_players, 1e6, 1e9))
   ) %>%
     mutate_at(
       vars(.data$forgivingness, .data$sneakiness),
