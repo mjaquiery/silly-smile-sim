@@ -5,6 +5,7 @@ FEATURES <- c('smiling', 'frowning', 'pursed lips', 'eye contact')
 #' Return a target facial expression for an event
 #' @param event tbl row of the event to which we are responding
 #' @return tbl of feature-value pairs describing a facial expression
+#' @importFrom dplyr tibble case_when
 event_facial_response <- function(event) {
   values <- NULL
   if (event$name == "decision_time") {
@@ -30,9 +31,10 @@ event_facial_response <- function(event) {
 #' Update a face by moving some amount from the current value to the target
 #' @param face face to update
 #' @return updated \code{face}
+#' @importFrom dplyr case_when mutate %>%
 update_face <- function(face) {
   .update <- function(value, target, delta) {
-    case_when(
+    dplyr::case_when(
       # If we're close enough to the target then snap there
       abs(value - target) < abs(delta) ~ value,
       # Update using delta in the correct direction
@@ -49,6 +51,8 @@ update_face <- function(face) {
 #' Simulate a single round of data for a single participant
 #' @param behavioural_data tbl of behavioural data (player, round, and temporal event markers)
 #' @return tbl of a simulated round with a column for each feature and a row for each frame
+#' @importFrom dplyr tibble %>% select filter case_when mutate pull bind_rows
+#' @importFrom tidyr pivot_longer pivot_wider
 simulate_feature_data <- function(behavioural_data, ms_between_expressions = 150) {
   face <- tibble(
     feature = FEATURES,
@@ -113,6 +117,10 @@ simulate_feature_data <- function(behavioural_data, ms_between_expressions = 150
 #' Simulate facial data for players
 #' @param behavioural_data tbl of behavioural data (player, round, and temporal event markers)
 #' @return tbl of a simulated round with a column for each feature and a row for each frame
+#' @export
+#' @importFrom dplyr %>% mutate
+#' @importFrom tidyr nest unnest
+#' @importFrom purrr map
 simulate_faces <- function(behavioural_data, ms_between_expression = 150) {
   behavioural_data %>%
     nest(d = -id) %>%

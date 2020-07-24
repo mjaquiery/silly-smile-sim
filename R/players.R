@@ -3,6 +3,8 @@
 #' Simulate the underlying tendencies for players
 #' @param n_players number of players to simulate
 #' @return tbl of $id, $z_decision_speed, $forgivingness, $sneakiness
+#' @importFrom dplyr %>% tibble mutate_at if_else vars
+#' @export
 simulate_players <- function(n_players) {
   forgive_gamma_shape <- 1
   forgive_gamma_rate <- 5

@@ -3,7 +3,13 @@
 #' Print a neat EEG-style plot of how facial features are moving throughout the
 #' trials
 #' @param feature_data facial feature data to plot
+#' @return ggPlot object with a feature_data plot
+#' @import ggplot2
+#' @importFrom tidyr pivot_longer
+#' @importFrom dplyr %>% if_else arrange
+#' @export
 feature_plot <- function(feature_data) {
+  require(ggplot2)
   events <- feature_data %>%
     select(frame, last_event, last_decision, last_partner_decision, last_outcome) %>%
     filter(last_event != lag(last_event)) %>%

@@ -8,6 +8,7 @@ OUTCOME_NAMES <- c('Mutual betrayal', 'Outcome stolen', 'Stole outcome', 'Outcom
 #' @param player_a_decision whether player a cooperates
 #' @param player_b_decision whether player b cooperates
 #' @return string describing the outcome
+#' @export
 get_outcome_description <- function(a_cooperates, b_cooperates) {
   if (length(a_cooperates) > 1)
     return(sapply(1:length(a_cooperates), function(i)
@@ -39,6 +40,7 @@ get_decision_time <- function(z_times, M, SD, cap = TRUE) {
 #'   cooperated, players defect based on their sneakiness. Where the partner
 #'   defected, players cooperate based on their forgivingness.
 #' @return logical of T = cooperate, F = defect
+#' @importFrom dplyr if_else
 does_player_cooperate <- function(player, previous_round) {
   partner_cooperated_before <- if_else(
     player$id == previous_round$player_a_id,
@@ -58,6 +60,7 @@ does_player_cooperate <- function(player, previous_round) {
 #' @param decision_time_mean mean decision time of the sample
 #' @param decision_time_sd standard deviation of the above
 #' @return tbl with $id, $round_id, and markers for $decision_time, $partner_decision_time, $reveal_time, and $round_end_time all in ms.
+#' @importFrom dplyr tibble %>% mutate select
 simulate_behavioural_markers <- function(player, partner, n_rounds, decision_time_mean = 750, decision_time_sd = 100) {
   behaviour <- tibble(
     id = rep(player$id, n_rounds),
@@ -94,6 +97,7 @@ simulate_behavioural_markers <- function(player, partner, n_rounds, decision_tim
 #' @param player_b player taking the role of player b
 #' @param n_rounds number of rounds to simulate
 #' @return tbl with $round_id, $player_a_id, $player_b_id, $player_a_cooperates, $player_b_cooperates, $outcome
+#' @importFrom dplyr tibble
 simulate_game <- function(player_a, player_b, n_rounds) {
   rounds <- tibble(
     round_id = 1:n_rounds,
@@ -132,6 +136,8 @@ simulate_game <- function(player_a, player_b, n_rounds) {
 #' @param n_rounds number of rounds to simulate
 #' @param fps frame rate of simulations
 #' @return tbl of experiment data
+#' @importFrom dplyr tibble bind_rows %>% left_join
+#' @export
 simulate_rounds <- function(players, n_rounds, fps = 30) {
   decision_time_mean <- 1000
   decision_time_sd <- 200
