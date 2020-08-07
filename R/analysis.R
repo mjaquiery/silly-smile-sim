@@ -38,7 +38,7 @@ feature_plot <- function(feature_data, features = FEATURES) {
     pivot_longer(all_of(features), names_to = 'feature') %>%
     ggplot(aes(x = .data$frame, y = .data$value)) +
     geom_vline(aes(xintercept = .data$frame, colour = .data$event, linetype = .data$event), data = events, size = .75) +
-    geom_line(aes(group = .data$id)) +
+    geom_line(aes(group = .data$id), size = 1) +
     scale_colour_manual(name = 'Event',
                         limits = c(
                           'Round start',
@@ -57,7 +57,6 @@ feature_plot <- function(feature_data, features = FEATURES) {
                           drop = F,
                           values = c('dashed', rep('solid', 6))
     ) +
-    theme_light() +
     facet_grid(feature ~ .) +
     labs(
       title = paste0('Facial trajectory plot (participant ', feature_data$id[1], ')')
