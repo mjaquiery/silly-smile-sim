@@ -37,9 +37,21 @@ test_that("feature_plot returns a ggplot object", {
   expect_equal("ggplot" %in% class(g), T)
 })
 
+# Look at individual graphs
 if (F) {
   feature_plot(x$d[[1]], features = c(
     'Smile', 'Cheek.Raise', 'Mouth.Open', 'Lip.Press', 'Dimpler', 'Lip.Stretch',
     'Lip.Suck', 'Chin.Raise', 'Brow.Furrow', 'Nose.Wrinkle', 'Upper.Lip.Raise'
-  ))
+  )) +
+    theme_light() +
+    theme(
+      panel.grid = element_blank()
+    )
+}
+
+# Generate the data for other tests
+if (F) {
+  save(s, file = 'tests/testthat/data/player_data.Rdata')
+  save(r, file = 'tests/testthat/data/behavioural_data.Rdata')
+  save(f, file = 'tests/testthat/data/facial_data.Rdata')
 }
