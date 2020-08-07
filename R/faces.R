@@ -58,6 +58,7 @@ generate_resting_face <- function(seed, means, sds) {
 #' @importFrom stats rnorm
 event_facial_response <- function(event, resting_face) {
   values <- NULL
+  facial_volatility <- 25
   if (event$name == "decision_time") {
     values <- case_when(
       event$player_a_cooperates ~ c(100, 100, 95, 0, 0, 0, 65, 3, 0, 0, 0,
@@ -84,9 +85,8 @@ event_facial_response <- function(event, resting_face) {
     )
   } else
     # round start
-    values <- generate_resting_face(resting_face, 0, 5)$value
+    values <- generate_resting_face(resting_face, 0, facial_volatility)$value
 
-  facial_volatility <- 5
   tibble(
     feature = FEATURES,
     value = rnorm(length(FEATURES), values, facial_volatility)
@@ -108,9 +108,11 @@ update_face <- function(face) {
       T ~ value + -abs(delta)
     )
   }
+  noise <- 5
   face %>%
     mutate(
-      value = .update(.data$value, .data$target, .data$delta)
+      value = .update(.data$value, .data$target, .data$delta),
+      value = rnorm(length(.data$value), .data$value, noise)
     )
 }
 
