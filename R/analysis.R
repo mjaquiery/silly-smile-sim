@@ -3,21 +3,23 @@
 #' Print a neat EEG-style plot of how facial features are moving throughout the
 #' trials
 #' @param feature_data facial feature data to plot
+#' @param features facial features to include in the plot
 #' @return ggPlot object with a feature_data plot
 #' @import ggplot2
 #' @importFrom tidyr pivot_longer
-#' @importFrom dplyr %>% if_else arrange lag all_of
+#' @importFrom dplyr %>% if_else arrange lag all_of matches
 #' @importFrom rlang .data
 #' @importFrom scales hue_pal
 #' @export
-feature_plot <- function(feature_data) {
+feature_plot <- function(feature_data, features = FEATURES) {
   requireNamespace("ggplot2")
   events <- feature_data %>%
     select(.data$frame,
            .data$last_event,
            .data$last_decision,
            .data$last_partner_decision,
-           .data$last_outcome) %>%
+           .data$last_outcome,
+           matches(features)) %>%
     filter(.data$last_event != lag(.data$last_event)) %>%
     bind_rows(tibble(last_event = 'round_start_time', frame = 0)) %>%
     arrange(.data$frame) %>%
@@ -33,7 +35,7 @@ feature_plot <- function(feature_data) {
     )
 
   feature_data %>%
-    pivot_longer(all_of(FEATURES), names_to = 'feature') %>%
+    pivot_longer(all_of(features), names_to = 'feature') %>%
     ggplot(aes(x = .data$frame, y = .data$value)) +
     geom_vline(aes(xintercept = .data$frame, colour = .data$event, linetype = .data$event), data = events, size = .75) +
     geom_line(aes(group = .data$id)) +

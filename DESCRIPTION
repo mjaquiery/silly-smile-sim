@@ -22,4 +22,5 @@ Imports:
   rlang,
   stats, 
   scales,
-  testthat
+  testthat,
+  R.utils

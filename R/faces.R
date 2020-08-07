@@ -39,25 +39,15 @@ FEATURES <- c(
 #' @return tbl of feature-value pairs describing the log-odds that resting face matches a feature expression
 #' @importFrom stats rnorm
 #' @importFrom dplyr tibble
+#' @importFrom R.utils withSeed
 generate_resting_face <- function(seed, means, sds) {
-  .seed <- NA
-  if (".Random.seed" %in% ls(.GlobalEnv))
-    .seed <- .GlobalEnv$.Random.seed
-  else
-    .seed <- round(runif(1, 1e6, 1e9))
-  set.seed(seed)
-
-  out <- tibble(
-    feature = FEATURES,
-    value = rnorm(length(FEATURES), means, sds)
+  withSeed(
+    tibble(
+      feature = FEATURES,
+      value = rnorm(length(FEATURES), means, sds)
+    ),
+    seed = seed
   )
-
-  if (!is.na(seed))
-    .GlobalEnv$.Random.seed <- .seed
-  else
-    try(rm(.Random.seed, envir = .GlobalEnv))
-
-  out
 }
 
 #' Return a target facial expression for an event

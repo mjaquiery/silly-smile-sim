@@ -5,10 +5,12 @@
 \title{Print a neat EEG-style plot of how facial features are moving throughout the
 trials}
 \usage{
-feature_plot(feature_data)
+feature_plot(feature_data, features = FEATURES)
 }
 \arguments{
 \item{feature_data}{facial feature data to plot}
+
+\item{features}{facial features to include in the plot}
 }
 \value{
 ggPlot object with a feature_data plot

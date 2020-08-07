@@ -22,6 +22,14 @@ test_that("simulate_faces returns a tbl", {
   expect_equal("tbl" %in% class(f), T)
 })
 
+test_that("generate_resting_face is consistent", {
+  load('data/player_data.Rdata')
+  expect_equal(
+    generate_resting_face(s$resting_face_seed[1], 0, 1),
+    generate_resting_face(s$resting_face_seed[1], 0, 1)
+  )
+})
+
 test_that("feature_plot returns a ggplot object", {
   load('data/facial_data.Rdata')
   x <- f %>% mutate(i = id) %>% nest(d = -i)
@@ -29,3 +37,9 @@ test_that("feature_plot returns a ggplot object", {
   expect_equal("ggplot" %in% class(g), T)
 })
 
+if (F) {
+  feature_plot(x$d[[1]], features = c(
+    'Smile', 'Cheek.Raise', 'Mouth.Open', 'Lip.Press', 'Dimpler', 'Lip.Stretch',
+    'Lip.Suck', 'Chin.Raise', 'Brow.Furrow', 'Nose.Wrinkle', 'Upper.Lip.Raise'
+  ))
+}
