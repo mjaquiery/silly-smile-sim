@@ -64,7 +64,13 @@ does_player_cooperate <- function(player, previous_round) {
 #' @importFrom dplyr tibble %>% mutate select
 #' @importFrom rlang .data
 #' @importFrom stats rnorm
-simulate_behavioural_markers <- function(player, partner, n_rounds, decision_time_mean = 750, decision_time_sd = 100) {
+simulate_behavioural_markers <- function(
+  player,
+  partner,
+  n_rounds,
+  decision_time_mean = 750,
+  decision_time_sd = 100
+) {
   behaviour <- tibble(
     id = rep(player$id, n_rounds),
     resting_face_seed = player$resting_face_seed,  # needed for face data stuff later
@@ -93,15 +99,16 @@ simulate_behavioural_markers <- function(player, partner, n_rounds, decision_tim
     mutate(
       reveal_time = pmax(.data$decision_time, .data$partner_decision_time)
     ) %>%
-    select(.data$id,
-           .data$resting_face_seed,
-           .data$round_id,
-           .data$round_start_time,
-           .data$decision_time,
-           .data$partner_decision_time,
-           .data$reveal_time,
-           .data$round_end_time)
-
+    select(
+      .data$id,
+      .data$resting_face_seed,
+      .data$round_id,
+      .data$round_start_time,
+      .data$decision_time,
+      .data$partner_decision_time,
+      .data$reveal_time,
+      .data$round_end_time
+    )
 }
 
 #' Simulate the cooperation/defecting behaviour in the game

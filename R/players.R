@@ -2,7 +2,8 @@
 
 #' Simulate the underlying tendencies for players
 #' @param n_players number of players to simulate
-#' @return tbl of $id, $z_decision_speed, $forgivingness, $sneakiness
+#' @return tbl of $id, $z_decision_speed, $forgivingness, $sneakiness,
+#'   $resting_face_seed
 #' @importFrom dplyr %>% tibble mutate_at if_else vars
 #' @importFrom rlang .data
 #' @importFrom stats rgamma runif

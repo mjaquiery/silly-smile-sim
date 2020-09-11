@@ -57,8 +57,10 @@ generate_resting_face <- function(seed, means, sds) {
 #' @importFrom dplyr tibble case_when
 #' @importFrom stats rnorm
 event_facial_response <- function(event, resting_face) {
+
   values <- NULL
   facial_volatility <- 25
+
   if (event$name == "decision_time") {
     values <- case_when(
       event$player_a_cooperates ~ c(100, 100, 95, 0, 0, 0, 65, 3, 0, 0, 0,
@@ -68,7 +70,10 @@ event_facial_response <- function(event, resting_face) {
             0, 7, 7, 0, 15, 0, 0, 0, 0, 2, 0)
     )
   } else if (event$name == "reveal_time") {
-    outcome <- get_outcome_description(event$player_a_cooperates, event$player_b_cooperates)
+    outcome <- get_outcome_description(
+      event$player_a_cooperates,
+      event$player_b_cooperates
+    )
     values <- case_when(
       outcome == 'Mutual betrayal' ~ c(100, 70, 100, 0, 9, 2, 70, 15, 2.5,
                                        0, 5, 6, 90, 80, 25, 0, 100, 100,
@@ -91,6 +96,7 @@ event_facial_response <- function(event, resting_face) {
     feature = FEATURES,
     value = rnorm(length(FEATURES), values, facial_volatility)
   )
+
 }
 
 #' Update a face by moving some amount from the current value to the target
@@ -196,8 +202,30 @@ simulate_feature_data <- function(behavioural_data, ms_between_expressions = 150
 #' @importFrom purrr map
 #' @importFrom rlang .data
 simulate_faces <- function(behavioural_data, ms_between_expressions = 150) {
+  behavioural_data <- behavioural_data %>%
+    nest(d = -.data$id)
+
+  if (getOption('sillySmileSim.useParallel')) {
+    cl <- parallel::makeCluster(getOption('sillySmileSim.nCores'))
+    behavioural_data$x <- parallel::parLapply(
+      cl,
+      behavioural_data$d,
+      function(x) {
+        library(sillySmileSim);
+        sillySmileSim:::simulate_feature_data(
+          x,
+          ms_between_expressions = ms_between_expressions
+        )
+      }
+    )
+  } else {
+    behavioural_data <- behavioural_data %>%
+      mutate(x = map(.data$d, ~ simulate_feature_data(
+        .,
+        ms_between_expressions = ms_between_expressions
+      )))
+  }
+
   behavioural_data %>%
-    nest(d = -.data$id) %>%
-    mutate(x = map(.data$d, ~ simulate_feature_data(., ms_between_expressions = ms_between_expressions))) %>%
     unnest(cols = c(.data$x))
 }
