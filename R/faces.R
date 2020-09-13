@@ -249,6 +249,7 @@ simulate_faces <- function(
       function(x) {
         if (!require(sillySmileSim)) {
           remotes::install_github('mjaquiery/silly-smile-sim')
+          library(sillySmileSim)
         }
         .simulate_feature_data(
           x,
