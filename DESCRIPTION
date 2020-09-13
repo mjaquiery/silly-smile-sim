@@ -23,4 +23,6 @@ Imports:
   stats, 
   scales,
   testthat,
-  R.utils
+  R.utils,
+  utils,
+  stringr

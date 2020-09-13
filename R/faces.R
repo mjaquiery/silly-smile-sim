@@ -63,7 +63,7 @@ event_facial_response <- function(event, resting_face) {
 
   if (event$name == "decision_time") {
     values <- case_when(
-      event$player_a_cooperates ~ c(100, 100, 95, 0, 0, 0, 65, 3, 0, 0, 0,
+      event$player_cooperates ~ c(100, 100, 95, 0, 0, 0, 65, 3, 0, 0, 0,
                                     5, 45, 30, 10, 0, 0, 0, 5, 0, 0, 0, 5,
                                     0, 0, 40, 0, 3, 0),
       T ~ c(40, 45, 95, 0, 0, 5, 20, 10, 0, 0, 0, 10, 20, 3, 5, 25, 0, 60,
@@ -71,8 +71,8 @@ event_facial_response <- function(event, resting_face) {
     )
   } else if (event$name == "reveal_time") {
     outcome <- get_outcome_description(
-      event$player_a_cooperates,
-      event$player_b_cooperates
+      event$player_cooperates,
+      event$partner_cooperates
     )
     values <- case_when(
       outcome == 'Mutual betrayal' ~ c(100, 70, 100, 0, 9, 2, 70, 15, 2.5,
@@ -129,7 +129,8 @@ update_face <- function(face) {
 #' @importFrom dplyr tibble %>% select filter case_when mutate pull bind_rows contains
 #' @importFrom tidyr pivot_longer pivot_wider
 #' @importFrom rlang .data
-simulate_feature_data <- function(behavioural_data, ms_between_expressions = 150) {
+#' @export
+.simulate_feature_data <- function(behavioural_data, ms_between_expressions = 150) {
   face <- tibble(
     feature = FEATURES,
     value = 0,
@@ -160,10 +161,10 @@ simulate_feature_data <- function(behavioural_data, ms_between_expressions = 150
         T ~ pull(event, name)[1]
       )
       event <- filter(event, .data$name == last_event)[1, ]
-      last_decision <- pull(event, .data$player_a_cooperates)
-      last_partner_decision <- pull(event, .data$player_b_cooperates)
+      last_decision <- pull(event, .data$player_cooperates)
+      last_partner_decision <- pull(event, .data$partner_cooperates)
       last_outcome <- pull(event, .data$outcome)
-      resting_face_seed <- pull(event, .data$resting_face_seed)
+      resting_face_seed <- pull(event, .data$player)[[1]]$resting_face_seed
       face <- face %>%
         mutate(
           # we can map quickly between target and event_facial_response because
@@ -193,17 +194,52 @@ simulate_feature_data <- function(behavioural_data, ms_between_expressions = 150
 }
 
 #' Simulate facial data for players
+#' @param players list of players in the game
 #' @param behavioural_data tbl of behavioural data (player, round, and temporal event markers)
 #' @param ms_between_expressions milliseconds between expressions
 #' @return tbl of a simulated round with a column for each feature and a row for each frame
 #' @export
-#' @importFrom dplyr %>% mutate
+#' @importFrom dplyr %>% mutate rename_with
 #' @importFrom tidyr nest unnest
-#' @importFrom purrr map
+#' @importFrom purrr map map2
 #' @importFrom rlang .data
-simulate_faces <- function(behavioural_data, ms_between_expressions = 150) {
+#' @importFrom stringr str_replace
+simulate_faces <- function(
+  players, behavioural_data, ms_between_expressions = 150
+) {
   behavioural_data <- behavioural_data %>%
-    nest(d = -.data$id)
+    pivot_longer(
+      cols = matches('[ab]_id'),
+      names_to = 'position',
+      names_pattern = '([ab])_id',
+      values_to = 'id'
+    ) %>%
+    mutate(
+      player = map(.data$id, ~get_player_by_id(., players))
+    ) %>%
+    nest(d = c(-.data$id, -.data$position))
+
+  # Rearrange data to replace a_ and b_ variables with player_ and partner_ as
+  # required by the player's position
+  .rename <- function(df, position) {
+    df %>%
+      mutate(
+        d = map(
+          .data$d,
+          ~rename_with(
+            ., ~str_replace(., paste0('^', position, '_'), 'player_')
+          ) %>%
+            rename_with(~str_replace(., '^[ab]_', 'partner_'))
+        )
+      )
+  }
+
+  behavioural_data <- behavioural_data %>%
+    nest(d = -.data$position) %>%
+    mutate(
+      d = map2(.data$d, .data$position, .rename)
+    ) %>%
+    unnest(cols = .data$d)
 
   if (getOption('sillySmileSim.useParallel')) {
     cl <- parallel::makeCluster(getOption('sillySmileSim.nCores'))
@@ -212,15 +248,16 @@ simulate_faces <- function(behavioural_data, ms_between_expressions = 150) {
       behavioural_data$d,
       function(x) {
         library(sillySmileSim);
-        sillySmileSim:::simulate_feature_data(
+        .simulate_feature_data(
           x,
-          ms_between_expressions = ms_between_expressions
+          ms_between_expressions
         )
       }
     )
+    parallel::stopCluster(cl)
   } else {
     behavioural_data <- behavioural_data %>%
-      mutate(x = map(.data$d, ~ simulate_feature_data(
+      mutate(x = map(.data$d, ~ .simulate_feature_data(
         .,
         ms_between_expressions = ms_between_expressions
       )))

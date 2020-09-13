@@ -14,7 +14,7 @@ simulate_game(player_a, player_b, n_rounds)
 \item{n_rounds}{number of rounds to simulate}
 }
 \value{
-tbl with $round_id, $player_a_id, $player_b_id, $player_a_cooperates, $player_b_cooperates, $outcome
+tbl with $round_id, $a_id, $b_id, $player_a_cooperates, $player_b_cooperates, $outcome
 }
 \description{
 Simulate the cooperation/defecting behaviour in the game

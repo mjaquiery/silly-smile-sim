@@ -1,13 +1,13 @@
 context("Basic simulation behaviour")
 library(sillySmileSim)
 
-n_players <- 3
+n_players <- 4
 n_rounds <- 5
 fps <- 30
 
-test_that("simulate_players returns a tbl", {
+test_that("simulate_players returns a list", {
   s <- simulate_players(n_players)
-  expect_equal("tbl" %in% class(s), T)
+  expect_equal("list" %in% class(s), T)
 })
 
 test_that("simulate_rounds returns a tbl", {
@@ -17,16 +17,17 @@ test_that("simulate_rounds returns a tbl", {
 })
 
 test_that("simulate_faces returns a tbl", {
+  load('data/player_data.Rdata')
   load('data/behavioural_data.Rdata')
-  f <- simulate_faces(r)
+  f <- simulate_faces(s, r)
   expect_equal("tbl" %in% class(f), T)
 })
 
 test_that("generate_resting_face is consistent", {
   load('data/player_data.Rdata')
   expect_equal(
-    generate_resting_face(s$resting_face_seed[1], 0, 1),
-    generate_resting_face(s$resting_face_seed[1], 0, 1)
+    generate_resting_face(s[[1]]$resting_face_seed, 0, 1),
+    generate_resting_face(s[[1]]$resting_face_seed, 0, 1)
   )
 })
 

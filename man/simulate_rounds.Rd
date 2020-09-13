@@ -2,20 +2,20 @@
 % Please edit documentation in R/game.R
 \name{simulate_rounds}
 \alias{simulate_rounds}
-\title{Simulate the data}
+\title{Simulate the data from playing games between pairs of our players}
 \usage{
 simulate_rounds(players, n_rounds, fps = 30)
 }
 \arguments{
-\item{players}{tbl of players}
+\item{players}{list of players}
 
 \item{n_rounds}{number of rounds to simulate}
 
 \item{fps}{frame rate of simulations}
 }
 \value{
-tbl of experiment data
+players with $gameplay attached with tbl of experiment data
 }
 \description{
-Simulate the data
+Simulate the data from playing games between pairs of our players
 }

@@ -4,13 +4,16 @@
 \alias{simulate_players}
 \title{Simulate the underlying tendencies for players}
 \usage{
-simulate_players(n_players)
+simulate_players(n_players, .forceN = F)
 }
 \arguments{
 \item{n_players}{number of players to simulate}
+
+\item{.forceN}{whether to suppress errors concerning odd/singular n_players}
 }
 \value{
-tbl of $id, $z_decision_speed, $forgivingness, $sneakiness
+tbl of $id, $z_decision_speed, $forgivingness, $sneakiness,
+$resting_face_seed
 }
 \description{
 Simulate the underlying tendencies for players

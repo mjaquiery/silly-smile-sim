@@ -4,9 +4,11 @@
 \alias{simulate_faces}
 \title{Simulate facial data for players}
 \usage{
-simulate_faces(behavioural_data, ms_between_expressions = 150)
+simulate_faces(players, behavioural_data, ms_between_expressions = 150)
 }
 \arguments{
+\item{players}{list of players in the game}
+
 \item{behavioural_data}{tbl of behavioural data (player, round, and temporal event markers)}
 
 \item{ms_between_expressions}{milliseconds between expressions}

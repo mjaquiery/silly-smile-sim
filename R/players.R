@@ -2,20 +2,28 @@
 
 #' Simulate the underlying tendencies for players
 #' @param n_players number of players to simulate
+#' @param .forceN whether to suppress errors concerning odd/singular n_players
 #' @return tbl of $id, $z_decision_speed, $forgivingness, $sneakiness,
 #'   $resting_face_seed
 #' @importFrom dplyr %>% tibble mutate_at if_else vars
 #' @importFrom rlang .data
 #' @importFrom stats rgamma runif
 #' @export
-simulate_players <- function(n_players) {
+simulate_players <- function(n_players, .forceN = F) {
+  if (!.forceN) {
+    if (n_players < 2)
+      stop('At least two players must be present to play a game.')
+    if (n_players %% 2 > 0)
+      stop('n_players must be even to allow pairs to be made.')
+  }
+
   forgive_gamma_shape <- 1
   forgive_gamma_rate <- 5
   forgive_min <- .01
   sneak_gamma_shape <- .4
   sneak_gamma_rate <- 5
   sneak_min <- .01
-  tibble(
+  values <- tibble(
     id = 1:n_players,
     z_decision_speed = rnorm(n_players),
     # Forgivingness is the likelihood of cooperating after being defected against
@@ -32,4 +40,17 @@ simulate_players <- function(n_players) {
       vars(.data$forgivingness, .data$sneakiness),
       ~ if_else(. > 1, 1, .)
     )
+
+  players <- list()
+
+  for (p in 1:n_players) {
+    players[[p]] <- as.list(values[p, ])
+    players[[p]]$face_event_funs <- list(
+      'round_start_time' = function(x) {rep(50, 29)},
+      'decision_time' = function(x) {rep(0, 29)},
+      'reveal_time' = function(x) {rep(100, 29)}
+    )
+  }
+
+  players
 }

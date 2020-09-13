@@ -44,8 +44,8 @@ get_decision_time <- function(z_times, M, SD, cap = TRUE) {
 #' @importFrom stats runif
 does_player_cooperate <- function(player, previous_round) {
   partner_cooperated_before <- if_else(
-    player$id == previous_round$player_a_id,
-    previous_round$player_b_cooperates, previous_round$player_a_cooperates
+    player$id == previous_round$a_id,
+    previous_round$b_cooperates, previous_round$a_cooperates
   )
 
   if (partner_cooperated_before)
@@ -72,40 +72,40 @@ simulate_behavioural_markers <- function(
   decision_time_sd = 100
 ) {
   behaviour <- tibble(
-    id = rep(player$id, n_rounds),
-    resting_face_seed = player$resting_face_seed,  # needed for face data stuff later
     round_id = 1:n_rounds,
-    z_decision_time = rnorm(n_rounds, player$z_decision_speed),
-    z_partner_decision_time = rnorm(n_rounds, partner$z_decision_speed),
+    z_a_decision_time = rnorm(n_rounds, player$z_decision_speed),
+    z_b_decision_time = rnorm(n_rounds, partner$z_decision_speed),
     .round_end_time = 5000,
-    .decision_time = get_decision_time(.data$z_decision_time, decision_time_mean, decision_time_sd),
-    .partner_decision_time = get_decision_time(.data$z_partner_decision_time, decision_time_mean, decision_time_sd),
+    .a_decision_time = get_decision_time(
+      .data$z_a_decision_time, decision_time_mean, decision_time_sd
+    ),
+    .b_decision_time = get_decision_time(
+      .data$z_b_decision_time, decision_time_mean, decision_time_sd
+    ),
     round_end_time = NA_real_,
     round_start_time = NA_real_,
-    decision_time = NA_real_,
-    partner_decision_time = NA_real_,
+    a_decision_time = NA_real_,
+    b_decision_time = NA_real_,
   )
 
   for (r in 1:n_rounds) {
     behaviour$round_start_time[r] <- if (r == 1) 0 else behaviour$round_end_time[r - 1]
-    behaviour$decision_time[r] <-
-      sum(behaviour$.decision_time[1:r]) + behaviour$round_start_time[r]
-    behaviour$partner_decision_time[r] <-
-      sum(behaviour$.partner_decision_time[1:r]) + behaviour$round_start_time[r]
+    behaviour$a_decision_time[r] <-
+      sum(behaviour$.a_decision_time[1:r]) + behaviour$round_start_time[r]
+    behaviour$b_decision_time[r] <-
+      sum(behaviour$.b_decision_time[1:r]) + behaviour$round_start_time[r]
     behaviour$round_end_time[r] <- behaviour$.round_end_time[r] + behaviour$round_start_time[r]
   }
 
   behaviour %>%
     mutate(
-      reveal_time = pmax(.data$decision_time, .data$partner_decision_time)
+      reveal_time = pmax(.data$a_decision_time, .data$b_decision_time)
     ) %>%
     select(
-      .data$id,
-      .data$resting_face_seed,
       .data$round_id,
       .data$round_start_time,
-      .data$decision_time,
-      .data$partner_decision_time,
+      .data$a_decision_time,
+      .data$b_decision_time,
       .data$reveal_time,
       .data$round_end_time
     )
@@ -115,73 +115,77 @@ simulate_behavioural_markers <- function(
 #' @param player_a player taking the role of player a
 #' @param player_b player taking the role of player b
 #' @param n_rounds number of rounds to simulate
-#' @return tbl with $round_id, $player_a_id, $player_b_id, $player_a_cooperates, $player_b_cooperates, $outcome
+#' @return tbl with $round_id, $a_id, $b_id, $player_a_cooperates, $player_b_cooperates, $outcome
 #' @importFrom dplyr tibble
 simulate_game <- function(player_a, player_b, n_rounds) {
   rounds <- tibble(
     round_id = 1:n_rounds,
-    player_a_id = player_a$id,
-    player_b_id = player_b$id,
-    player_a_cooperates = NA,
-    player_b_cooperates = NA,
+    a_id = rep(player_a$id, n_rounds),
+    b_id = rep(player_b$id, n_rounds),
+    a_cooperates = NA,
+    b_cooperates = NA,
     outcome = NA
   )
   # Simulate serially because player's decisions depend on previous decisions
   for (r in 1:nrow(rounds)) {
     if (r == 1) {
       prev <- tibble(
-        player_a_id = player_a$id,
-        player_b_id = player_b$id,
-        player_a_cooperates = T,
-        player_b_cooperates = T,
+        a_id = player_a$id,
+        b_id = player_b$id,
+        a_cooperates = T,
+        b_cooperates = T,
         outcome = T
       )
     } else {
       prev <- rounds[r - 1, ]
     }
 
-    rounds$player_a_cooperates[r] <- does_player_cooperate(player_a, prev)
-    rounds$player_b_cooperates[r] <- does_player_cooperate(player_b, prev)
+    rounds$a_cooperates[r] <- does_player_cooperate(player_a, prev)
+    rounds$b_cooperates[r] <- does_player_cooperate(player_b, prev)
     rounds$outcome[r] <- as.logical(
-      rounds$player_a_cooperates[r] * rounds$player_b_cooperates[r]
+      rounds$a_cooperates[r] * rounds$b_cooperates[r]
     )
   }
 
   rounds
 }
 
-#' Simulate the data
-#' @param players tbl of players
+#' Simulate the data from playing games between pairs of our players
+#' @param players list of players
 #' @param n_rounds number of rounds to simulate
 #' @param fps frame rate of simulations
-#' @return tbl of experiment data
+#' @return players with $gameplay attached with tbl of experiment data
 #' @importFrom dplyr tibble bind_rows %>% left_join
 #' @export
 simulate_rounds <- function(players, n_rounds, fps = 30) {
   decision_time_mean <- 1000
   decision_time_sd <- 200
 
-  partners <- unlist(
-    sapply(players$id, function(x) sample(players$id[players$id != x], 1))
-  )
+  indices <- sample(1:length(players))
 
-  behaviour <- NULL
+  gameplay <- NULL
 
-  for (s in 1:nrow(players))
-    behaviour <- bind_rows(
-      behaviour,
+  s <- -1
+
+  while (s + 1 < length(indices)) {
+    s <- s + 2
+    gameplay <- bind_rows(
+      gameplay,
       simulate_behavioural_markers(
-        players[s, ],
-        players[partners[s], ],
+        players[[indices[s]]],
+        players[[indices[s + 1]]],
         n_rounds
       ) %>%
         left_join(
-          simulate_game(players[s, ],
-                        players[partners[s], ],
-                        n_rounds),
-          by = c('round_id', id = 'player_a_id')
+          simulate_game(
+            players[[indices[s]]],
+            players[[indices[s + 1]]],
+            n_rounds
+          ),
+          by = c('round_id')
         )
     )
+  }
 
-  behaviour
+  gameplay
 }

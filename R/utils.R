@@ -22,3 +22,16 @@ ms_to_frames <- function(ms, fps = 30, floor = T) {
 frames_to_ms <- function(frameNumbers, fps = 30) {
   frameNumbers / fps * 1000
 }
+
+
+#' Return the player whose id matches id
+#' @param id id of the player to fetch
+#' @param players list of players
+#' @return player or NA
+get_player_by_id <- function(id, players) {
+  for (player in players) {
+    if (player$id == id)
+      return(player)
+  }
+  return(NA)
+}
