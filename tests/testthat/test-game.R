@@ -19,8 +19,11 @@ test_that("simulate_rounds returns a tbl", {
 test_that("simulate_faces returns a tbl", {
   load('data/player_data.Rdata')
   load('data/behavioural_data.Rdata')
+  op <- options()
+  options(list(sillySmileSim.nCores = 2L))
   f <- simulate_faces(s, r)
   expect_equal("tbl" %in% class(f), T)
+  options(op)
 })
 
 test_that("generate_resting_face is consistent", {
