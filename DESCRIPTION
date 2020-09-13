@@ -25,4 +25,5 @@ Imports:
   testthat,
   R.utils,
   utils,
-  stringr
+  stringr,
+  remotes
