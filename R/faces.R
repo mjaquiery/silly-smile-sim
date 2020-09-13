@@ -248,7 +248,7 @@ simulate_faces <- function(
       behavioural_data$d,
       function(x) {
         if (!require(sillySmileSim)) {
-          remotes::install_github('mjaquiery/sillySmileSim')
+          remotes::install_github('mjaquiery/silly-smile-sim')
         }
         .simulate_feature_data(
           x,
