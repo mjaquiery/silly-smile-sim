@@ -251,6 +251,7 @@ simulate_faces <- function(
 
   if (getOption('sillySmileSim.useParallel')) {
     cl <- parallel::makeCluster(getOption('sillySmileSim.nCores'))
+    on.exit({parallel::stopCluster(cl)})
     behavioural_data$x <- parallel::parLapply(
       cl,
       behavioural_data$d,
@@ -262,7 +263,7 @@ simulate_faces <- function(
         )
       }
     )
-    parallel::stopCluster(cl)
+
   } else {
     behavioural_data <- behavioural_data %>%
       mutate(x = map(.data$d, ~ .simulate_feature_data(
