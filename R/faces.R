@@ -157,7 +157,8 @@ update_face <- function(face) {
     if (nrow(event)) {
       last_event <- case_when(
         'reveal_time' %in% pull(event, .data$name) ~ 'reveal_time',
-        'decision_time' %in% pull(event, .data$name) ~ 'decision_time',
+        'player_decision_time' %in% pull(event, .data$name) ~
+          'player_decision_time',
         T ~ pull(event, name)[1]
       )
       event <- filter(event, .data$name == last_event)[1, ]
@@ -169,7 +170,14 @@ update_face <- function(face) {
         mutate(
           # we can map quickly between target and event_facial_response because
           # event_facial_response returns a tbl with the same row order
-          target = event_facial_response(event, resting_face_seed)$value,
+          target = ifelse(
+            !is.null(event$player[[1]]$face_event_funs) &&
+              event$name %in% names(event$player[[1]]$face_event_funs),
+            # use player's custom face function
+            event$player[[1]]$face_event_funs[[event$name]](event)$value,
+            # use generic facial response function + resting face seed
+            event_facial_response(event, resting_face_seed)$value
+          ),
           delta = 100 / ms_to_frames(ms_between_expressions)
         )
     }
@@ -247,10 +255,7 @@ simulate_faces <- function(
       cl,
       behavioural_data$d,
       function(x) {
-        if (!require(sillySmileSim)) {
-          remotes::install_github('mjaquiery/silly-smile-sim')
-          library(sillySmileSim)
-        }
+        library(sillySmileSim)
         .simulate_feature_data(
           x,
           ms_between_expressions

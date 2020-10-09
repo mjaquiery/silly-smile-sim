@@ -45,10 +45,21 @@ simulate_players <- function(n_players, .forceN = F) {
 
   for (p in 1:n_players) {
     players[[p]] <- as.list(values[p, ])
+    # The player face_event_funs are functions which take an event with fields
+    # round_id, player_cooperates, partner_cooperates, outcome, (event) name,
+    # time, and player, and return a table of length(FEATURES) feature-value
+    # pairs specifying the target facial expression following that event.
+    #
+    # The round history is not available through event, nor the other player's
+    # facial information, but the player's own properties are accessible via
+    # event$player.
     players[[p]]$face_event_funs <- list(
-      'round_start_time' = function(x) {rep(50, 29)},
-      'decision_time' = function(x) {rep(0, 29)},
-      'reveal_time' = function(x) {rep(100, 29)}
+      'round_start_time' =
+        function(x) {tibble(value = rep(50, 29))},
+      'player_decision_time' =
+        function(x) {tibble(value = rep(0, 29))},
+      'reveal_time' =
+        function(x) {tibble(value = rep(100, 29))}
     )
   }
 

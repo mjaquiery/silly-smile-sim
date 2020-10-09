@@ -20,7 +20,17 @@ test_that("simulate_faces returns a tbl", {
   load('data/player_data.Rdata')
   load('data/behavioural_data.Rdata')
   op <- options()
-  options(list(sillySmileSim.nCores = 2L))
+  options(list(sillySmileSim.useParallel = T, sillySmileSim.nCores = 2L))
+  f <- simulate_faces(s, r)
+  expect_equal("tbl" %in% class(f), T)
+  options(op)
+})
+
+test_that("simulate_faces runs in serial", {
+  load('data/player_data.Rdata')
+  load('data/behavioural_data.Rdata')
+  op <- options()
+  options(list(sillySmileSim.useParallel = F))
   f <- simulate_faces(s, r)
   expect_equal("tbl" %in% class(f), T)
   options(op)
