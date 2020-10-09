@@ -50,55 +50,6 @@ generate_resting_face <- function(seed, means, sds) {
   )
 }
 
-#' Return a target facial expression for an event
-#' @param event tbl row of the event to which we are responding
-#' @param resting_face returned when nothing special is happening
-#' @return tbl of feature-value pairs describing the log-odds that data match a feature expression
-#' @importFrom dplyr tibble case_when
-#' @importFrom stats rnorm
-event_facial_response <- function(event, resting_face) {
-
-  values <- NULL
-  facial_volatility <- 25
-
-  if (event$name == "decision_time") {
-    values <- case_when(
-      event$player_cooperates ~ c(100, 100, 95, 0, 0, 0, 65, 3, 0, 0, 0,
-                                    5, 45, 30, 10, 0, 0, 0, 5, 0, 0, 0, 5,
-                                    0, 0, 40, 0, 3, 0),
-      T ~ c(40, 45, 95, 0, 0, 5, 20, 10, 0, 0, 0, 10, 20, 3, 5, 25, 0, 60,
-            0, 7, 7, 0, 15, 0, 0, 0, 0, 2, 0)
-    )
-  } else if (event$name == "reveal_time") {
-    outcome <- get_outcome_description(
-      event$player_cooperates,
-      event$partner_cooperates
-    )
-    values <- case_when(
-      outcome == 'Mutual betrayal' ~ c(100, 70, 100, 0, 9, 2, 70, 15, 2.5,
-                                       0, 5, 6, 90, 80, 25, 0, 100, 100,
-                                       80, 0, 0, 0, 0, 0, 0, 80, 0, 0, 0),
-      outcome == 'Outcome stolen' ~ c(0, -50, 95, 15, 20, 3, 0, 5, 0, 93,
-                                      70, 0, 0, 0, 2, 13, 65, 70, 25, 0,
-                                      30, 40, 0, 90, 30, 0, 0, 0, 0),
-      outcome == 'Stole outcome' ~ c(100, -10, 95, 0, 0, 4, 20, 30, 15, 0,
-                                     5, 30, 0, 0, 50, 22, 3, 15, 0, 30, 70,
-                                     40, 100, 80, 12, 0, 25, 13, 100),
-      outcome == 'Outcome shared' ~ c(100, 80, 100, 0, 0, 0, 75, 3, 0, 0, 0,
-                                      4, 10, 15, 0, 3, 10, 0, 20, 0, 0, 0, 0,
-                                      0, 0, 30, 0, 5, 0)
-    )
-  } else
-    # round start
-    values <- generate_resting_face(resting_face, 0, facial_volatility)$value
-
-  tibble(
-    feature = FEATURES,
-    value = rnorm(length(FEATURES), values, facial_volatility)
-  )
-
-}
-
 #' Update a face by moving some amount from the current value to the target
 #' @param face face to update
 #' @return updated \code{face}
@@ -165,19 +116,12 @@ update_face <- function(face) {
       last_decision <- pull(event, .data$player_cooperates)
       last_partner_decision <- pull(event, .data$partner_cooperates)
       last_outcome <- pull(event, .data$outcome)
-      resting_face_seed <- pull(event, .data$player)[[1]]$resting_face_seed
-      face <- face %>%
+      if (event$name %in% names(event$player[[1]]$face_event_funs))
+        face <- face %>%
         mutate(
-          # we can map quickly between target and event_facial_response because
-          # event_facial_response returns a tbl with the same row order
-          target = ifelse(
-            !is.null(event$player[[1]]$face_event_funs) &&
-              event$name %in% names(event$player[[1]]$face_event_funs),
-            # use player's custom face function
-            event$player[[1]]$face_event_funs[[event$name]](event)$value,
-            # use generic facial response function + resting face seed
-            event_facial_response(event, resting_face_seed)$value
-          ),
+          # we can map quickly between target and player's face_event_fun because
+          # player's face_event_fun returns a tbl with the same row order
+          target = event$player[[1]]$face_event_funs[[event$name]](event)$value,
           delta = 100 / ms_to_frames(ms_between_expressions)
         )
     }

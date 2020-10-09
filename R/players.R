@@ -34,6 +34,7 @@ simulate_players <- function(n_players, .forceN = F) {
     sneakiness = rgamma(
       n_players, shape = sneak_gamma_shape, rate = sneak_gamma_rate
     ) + sneak_min,
+    facial_volatility = rnorm(n_players, 10, 5),
     resting_face_seed = round(runif(n_players, 1e6, 1e9))
   ) %>%
     mutate_at(
@@ -55,11 +56,52 @@ simulate_players <- function(n_players, .forceN = F) {
     # event$player.
     players[[p]]$face_event_funs <- list(
       'round_start_time' =
-        function(x) {tibble(value = rep(50, 29))},
+        function(e) {
+          values <- generate_resting_face(e$player$resting_face_seed, 0, e$player$facial_volatility)$value
+          tibble(
+            feature = FEATURES,
+            value = rnorm(length(FEATURES), values, e$player$facial_volatility)
+          )
+        },
       'player_decision_time' =
-        function(x) {tibble(value = rep(0, 29))},
+        function(e) {
+          values <- case_when(
+            e$player_cooperates ~ c(100, 100, 95, 0, 0, 0, 65, 3, 0, 0, 0,
+                                        5, 45, 30, 10, 0, 0, 0, 5, 0, 0, 0, 5,
+                                        0, 0, 40, 0, 3, 0),
+            T ~ c(40, 45, 95, 0, 0, 5, 20, 10, 0, 0, 0, 10, 20, 3, 5, 25, 0, 60,
+                  0, 7, 7, 0, 15, 0, 0, 0, 0, 2, 0)
+          )
+          tibble(
+            feature = FEATURES,
+            value = rnorm(length(FEATURES), values, e$player$facial_volatility)
+          )
+        },
       'reveal_time' =
-        function(x) {tibble(value = rep(100, 29))}
+        function(e) {
+          outcome <- get_outcome_description(
+            e$player_cooperates,
+            e$partner_cooperates
+          )
+          values <- case_when(
+            outcome == 'Mutual betrayal' ~ c(100, 70, 100, 0, 9, 2, 70, 15, 2.5,
+                                             0, 5, 6, 90, 80, 25, 0, 100, 100,
+                                             80, 0, 0, 0, 0, 0, 0, 80, 0, 0, 0),
+            outcome == 'Outcome stolen' ~ c(0, -50, 95, 15, 20, 3, 0, 5, 0, 93,
+                                            70, 0, 0, 0, 2, 13, 65, 70, 25, 0,
+                                            30, 40, 0, 90, 30, 0, 0, 0, 0),
+            outcome == 'Stole outcome' ~ c(100, -10, 95, 0, 0, 4, 20, 30, 15, 0,
+                                           5, 30, 0, 0, 50, 22, 3, 15, 0, 30, 70,
+                                           40, 100, 80, 12, 0, 25, 13, 100),
+            outcome == 'Outcome shared' ~ c(100, 80, 100, 0, 0, 0, 75, 3, 0, 0, 0,
+                                            4, 10, 15, 0, 3, 10, 0, 20, 0, 0, 0, 0,
+                                            0, 0, 30, 0, 5, 0)
+          )
+          tibble(
+            feature = FEATURES,
+            value = rnorm(length(FEATURES), values, e$player$facial_volatility)
+          )
+        }
     )
   }
 
