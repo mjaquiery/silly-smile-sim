@@ -64,6 +64,10 @@ jobs:
           remotes::install_deps(dependencies = TRUE)
           remotes::install_cran("rcmdcheck")
         shell: Rscript {0}
+        
+      - name: Windows parallel support
+        run: remotes::install_github('mjaquiery/silly-smile-sim')
+        shell: Rscript {0}
 
       - name: Check
         env:
