@@ -57,24 +57,36 @@ simulate_players <- function(n_players, .forceN = F) {
     players[[p]]$face_event_funs <- list(
       'round_start_time' =
         function(e) {
-          values <- generate_resting_face(e$player$resting_face_seed, 0, e$player$facial_volatility)$value
+          values <- generate_resting_face(
+            e$player[[1]]$resting_face_seed,
+            0,
+            e$player[[1]]$facial_volatility
+          )$value
           tibble(
             feature = FEATURES,
-            value = rnorm(length(FEATURES), values, e$player$facial_volatility)
+            value = rnorm(
+              length(FEATURES),
+              values,
+              e$player[[1]]$facial_volatility
+            )
           )
         },
       'player_decision_time' =
         function(e) {
           values <- case_when(
             e$player_cooperates ~ c(100, 100, 95, 0, 0, 0, 65, 3, 0, 0, 0,
-                                        5, 45, 30, 10, 0, 0, 0, 5, 0, 0, 0, 5,
-                                        0, 0, 40, 0, 3, 0),
+                                    5, 45, 30, 10, 0, 0, 0, 5, 0, 0, 0, 5,
+                                    0, 0, 40, 0, 3, 0),
             T ~ c(40, 45, 95, 0, 0, 5, 20, 10, 0, 0, 0, 10, 20, 3, 5, 25, 0, 60,
                   0, 7, 7, 0, 15, 0, 0, 0, 0, 2, 0)
           )
           tibble(
             feature = FEATURES,
-            value = rnorm(length(FEATURES), values, e$player$facial_volatility)
+            value = rnorm(
+              length(FEATURES),
+              values,
+              e$player[[1]]$facial_volatility
+            )
           )
         },
       'reveal_time' =
@@ -99,7 +111,11 @@ simulate_players <- function(n_players, .forceN = F) {
           )
           tibble(
             feature = FEATURES,
-            value = rnorm(length(FEATURES), values, e$player$facial_volatility)
+            value = rnorm(
+              length(FEATURES),
+              values,
+              e$player[[1]]$facial_volatility
+            )
           )
         }
     )

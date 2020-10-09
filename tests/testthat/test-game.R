@@ -51,6 +51,13 @@ test_that("feature_plot returns a ggplot object", {
   expect_equal("ggplot" %in% class(g), T)
 })
 
+test_that("everything runs as set", {
+  s <- simulate_players(n_players)
+  r <- simulate_rounds(s, n_rounds)
+  f <- simulate_faces(s, r)
+  expect_equal("tbl" %in% class(f), T)
+})
+
 # Look at individual graphs
 if (F) {
   feature_plot(x$d[[1]], features = c(
