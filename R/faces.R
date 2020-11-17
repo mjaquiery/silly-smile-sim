@@ -117,12 +117,16 @@ update_face <- function(face) {
       last_decision <- pull(event, .data$player_cooperates)
       last_partner_decision <- pull(event, .data$partner_cooperates)
       last_outcome <- pull(event, .data$outcome)
+      round_id <- pull(event, .data$round_id)
       if (event$name %in% names(event$player[[1]]$face_event_funs))
         face <- face %>%
         mutate(
           # we can map quickly between target and player's face_event_fun because
           # player's face_event_fun returns a tbl with the same row order
-          target = event$player[[1]]$face_event_funs[[event$name]](event)$value,
+          target = event$player[[1]]$face_event_funs[[event$name]](
+            events,
+            which(events$time == event$time & events$name == event$name)
+          )$value,
           delta = 100 / ms_to_frames(ms_between_expressions)
         )
     }
@@ -136,7 +140,8 @@ update_face <- function(face) {
         last_event = last_event,
         last_decision = last_decision,
         last_partner_decision = last_partner_decision,
-        last_outcome = last_outcome
+        last_outcome = last_outcome,
+        round_id = round_id
       )
     )
   }

@@ -24,6 +24,7 @@ remotes::install_github('mjaquiery/silly-smile-sim')
 The simplest simulation is run by creating some players for the game, getting them to play the game, and simulating their facial responses to the game:
 
 ``` r
+library(sillySmileSim)
 n_players <- 4
 n_rounds <- 5
 
@@ -35,6 +36,7 @@ faces <- simulate_faces(players, behaviour)
 We can then view a graph of a player's face throughout the game:
 
 ``` r
+library(dplyr)
 # Split faces by player ID (while preserving id column)
 x <- faces %>% mutate(i = id) %>% nest(d = -i)
 # View player 1's facial data

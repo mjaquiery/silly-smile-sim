@@ -46,17 +46,19 @@ simulate_players <- function(n_players, .forceN = F) {
 
   for (p in 1:n_players) {
     players[[p]] <- as.list(values[p, ])
-    # The player face_event_funs are functions which take an event with fields
-    # round_id, player_cooperates, partner_cooperates, outcome, (event) name,
-    # time, and player, and return a table of length(FEATURES) feature-value
-    # pairs specifying the target facial expression following that event.
+    # The player face_event_funs are functions which take an events dataframe
+    # with fields round_id, player_cooperates, partner_cooperates, outcome,
+    # (event) name, time, and player, as well as a row index for the current
+    # event, and return a table of length(FEATURES) feature-value pairs
+    # specifying the target facial expression following that event.
     #
     # The round history is not available through event, nor the other player's
     # facial information, but the player's own properties are accessible via
     # event$player.
     players[[p]]$face_event_funs <- list(
       'round_start_time' =
-        function(e) {
+        function(events, i) {
+          e <- events[i, ]
           values <- generate_resting_face(
             e$player[[1]]$resting_face_seed,
             0,
@@ -72,7 +74,8 @@ simulate_players <- function(n_players, .forceN = F) {
           )
         },
       'player_decision_time' =
-        function(e) {
+        function(events, i) {
+          e <- events[i, ]
           values <- case_when(
             e$player_cooperates ~ c(100, 100, 95, 0, 0, 0, 65, 3, 0, 0, 0,
                                     5, 45, 30, 10, 0, 0, 0, 5, 0, 0, 0, 5,
@@ -90,7 +93,8 @@ simulate_players <- function(n_players, .forceN = F) {
           )
         },
       'reveal_time' =
-        function(e) {
+        function(events, i) {
+          e <- events[i, ]
           outcome <- get_outcome_description(
             e$player_cooperates,
             e$partner_cooperates
