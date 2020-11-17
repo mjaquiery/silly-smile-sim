@@ -43,8 +43,43 @@ x <- faces %>% mutate(i = id) %>% nest(d = -i)
 feature_plot(x$d[[1]])
 ```
 
+### Custom player response functions
+
+We can also have one or more players using custom response functions. 
+For example we can have a player whose response is always a blank face, regardless of what actually happens.
+
+``` r
+players[[1]]$face_event_funs$reveal_time <-
+  #' Function to process facial response to reveal_time event
+  #' @param events dataframe of events
+  #' @param row_id of the current event
+  #' @return 29 x 2 tibble of features and their target values
+  function(events, i) {
+    tibble::tibble(
+      feature = features(),
+      # rnorm adds a bit of variety around the flatness, based on the player's
+      # facial_volatility property
+      value = rnorm(
+        length(features()), 
+        0, 
+        events[i, 'player'][[1]]$facial_volatility
+      )
+    )
+  }
+  
+# now simulate with that new data
+behaviour <- simulate_rounds(players, n_rounds)
+faces <- simulate_faces(players, behaviour)
+
+# and plot the graph
+x <- faces %>% mutate(i = id) %>% nest(d = -i) %>% filter(i == 1)
+# View player 1's facial data
+feature_plot(x$d[[1]])
+
+```
+
 ## Limitations
 
 At the moment the package has support for individual players with individual responses to game events, and can make those responses dependent upon the player's own characteristics. 
-These custom functions cannot, however, depend upon historical information in the game, or upon the partner's facial configuration information. 
-The facial responses are thus discrete, idiosyncratic responses to isolated events rather than truly being enmeshed temporally within an evolving game and interlinked socially with another player.
+These custom functions cannot, however, depend upon the partner's facial configuration information. 
+The facial responses are thus discrete, idiosyncratic responses rather than truly being enmeshed temporally within an evolving game and interlinked socially with another player.

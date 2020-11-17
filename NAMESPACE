@@ -2,6 +2,7 @@
 
 export(.simulate_feature_data)
 export(feature_plot)
+export(features)
 export(frames_to_ms)
 export(get_outcome_description)
 export(ms_to_frames)

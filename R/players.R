@@ -52,9 +52,8 @@ simulate_players <- function(n_players, .forceN = F) {
     # event, and return a table of length(FEATURES) feature-value pairs
     # specifying the target facial expression following that event.
     #
-    # The round history is not available through event, nor the other player's
-    # facial information, but the player's own properties are accessible via
-    # event$player.
+    # The other player's facial information, is not available to these
+    # functions.
     players[[p]]$face_event_funs <- list(
       'round_start_time' =
         function(events, i) {

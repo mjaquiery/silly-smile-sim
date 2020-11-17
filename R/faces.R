@@ -32,6 +32,10 @@ FEATURES <- c(
 	"Smirk"
 )
 
+#' Vector of facial feature dimensions
+#' @export
+features <- function() FEATURES
+
 #' Generate a random resting face
 #' @param seed used to generate the random numbers
 #' @param means single number or vector of means for each feature
