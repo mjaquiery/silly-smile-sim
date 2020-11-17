@@ -91,6 +91,7 @@ update_face <- function(face) {
   last_event <- NULL
   last_decision <- NULL
   last_outcome <- NULL
+  round_id <- NULL
 
   events <- behavioural_data %>%
     select(-.data$partner_decision_time, -.data$round_end_time) %>%
