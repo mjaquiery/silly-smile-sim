@@ -2,7 +2,7 @@
 
 #' Names of the outcomes listed in order so that matrix(X, 2, 2) gives the
 #' outcome matrix with 1 = steal, 2 = split
-OUTCOME_NAMES <- c('Mutual betrayal', 'Outcome stolen', 'Stole outcome', 'Outcome shared')
+OUTCOME_NAMES <- c('DD', 'CD', 'DC', 'CC')
 
 #' Return a string describing the outcome
 #' @param a_cooperates whether player a cooperates
